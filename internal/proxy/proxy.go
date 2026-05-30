@@ -87,12 +87,14 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("setting a cache entry for: %v", redirectURL)
+	if resp.StatusCode >= 200 && resp.StatusCode < 400 {
+		log.Printf("setting a cache entry for: %v", redirectURL)
 
-	cachedResp := cache.CachedResponse{
-		Status:  resp.StatusCode,
-		Headers: resp.Header,
-		Body:    bodyBytes,
+		cachedResp := cache.CachedResponse{
+			Status:  resp.StatusCode,
+			Headers: resp.Header,
+			Body:    bodyBytes,
+		}
+		p.Cache.Set(redirectURL, &cachedResp)
 	}
-	p.Cache.Set(redirectURL, &cachedResp)
 }
