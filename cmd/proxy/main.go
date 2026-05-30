@@ -18,6 +18,8 @@ func main() {
 
 	cacheMap := cache.NewCacheMap()
 	client := &http.Client{}
+
+	// this is a no-op for now, since persistent cache is not implemented
 	if proxyConfig.FlushCache {
 		cacheMap.Flush()
 		log.Print("cache flushed succesfully")

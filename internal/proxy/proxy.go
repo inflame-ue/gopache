@@ -25,13 +25,17 @@ func NewProxy(client *http.Client, cache cache.Cache, origin string) *Proxy {
 	}
 }
 
-func writeCachedResponse(w http.ResponseWriter, cachedResponse cache.CachedResponse) (error) {
-	w.Header().Add("X-Cache", "HIT")
-	for name, hdrs := range cachedResponse.Headers {
+func addHeaders(w http.ResponseWriter, headers http.Header) {
+	for name, hdrs := range headers {
 		for _, hdr := range hdrs {
 			w.Header().Add(name, hdr)
 		}
 	}
+}
+
+func writeCachedResponse(w http.ResponseWriter, cachedResponse cache.CachedResponse) error {
+	w.Header().Add("X-Cache", "HIT")
+	addHeaders(w, cachedResponse.Headers)
 	w.WriteHeader(cachedResponse.Status)
 
 	_, err := io.Copy(w, bytes.NewReader(cachedResponse.Body))
@@ -54,13 +58,9 @@ func (p *Proxy) performRequest(w http.ResponseWriter, r *http.Request, url strin
 	defer resp.Body.Close()
 
 	w.Header().Add("X-Cache", "MISS")
-	for name, hdrs := range resp.Header {
-		for _, hdr := range hdrs {
-			w.Header().Add(name, hdr)
-		}
-	}
+	addHeaders(w, resp.Header)
 	w.WriteHeader(resp.StatusCode)
-	
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return &http.Response{}, []byte{}, fmt.Errorf("error while reading the response body bytes into memory: %v", err)
@@ -91,13 +91,12 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("redirecting to: %v", redirectURL)
-	resp, bodyBytes, err := p.performRequest(w, r, redirectURL, )
+	resp, bodyBytes, err := p.performRequest(w, r, redirectURL)
 	if err != nil {
 		log.Print(err)
 		return
 	}
 	log.Printf("handled the request with status: %v", resp.StatusCode)
-
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 400 {
 		log.Printf("setting a cache entry for: %v", redirectURL)
