@@ -7,8 +7,9 @@ import (
 )
 
 type CachedResponse struct {
-	headers http.Header
-	body    []byte
+	Status  int
+	Headers http.Header
+	Body    []byte
 }
 
 type CacheMap struct {
