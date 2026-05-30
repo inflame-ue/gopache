@@ -29,6 +29,7 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Printf("error while constructing the routed url path: %v", err)
 		return
 	}
+	log.Printf("redirecting to: %v", redirectURL)
 
 	redirectReq, err := http.NewRequest(r.Method, redirectURL, r.Body)
 	if err != nil {
@@ -48,6 +49,7 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add(name, hdr)
 		}
 	}
+	log.Printf("handled the request with status: %v", resp.StatusCode)
 	w.WriteHeader(resp.StatusCode)
 
 	_, err = io.Copy(w, resp.Body)

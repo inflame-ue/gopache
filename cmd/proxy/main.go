@@ -23,7 +23,7 @@ func main() {
 		log.Print("cache flushed succesfully")
 	}
 
-	proxy := proxy.NewProxy(client, &cacheMap, proxyConfig.Origin)
+	proxy := proxy.NewProxy(client, cacheMap, proxyConfig.Origin)
 	addr := fmt.Sprintf(":%d", proxyConfig.Port)
 	log.Printf("listening on port: %d", proxyConfig.Port)
 	http.ListenAndServe(addr, proxy)
