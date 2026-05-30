@@ -13,13 +13,13 @@ type CachedResponse struct {
 }
 
 type CacheMap struct {
-	entries map[string]CachedResponse
+	entries map[string]*CachedResponse
 	mutex   sync.RWMutex
 }
 
 func NewCacheMap() *CacheMap {
 	return &CacheMap{
-		entries: map[string]CachedResponse{},
+		entries: map[string]*CachedResponse{},
 		mutex:   sync.RWMutex{},
 	}
 }
@@ -29,12 +29,12 @@ func (cm *CacheMap) Get(key string) (*CachedResponse, bool) {
 	val, ok := cm.entries[strings.ToLower(key)]
 	cm.mutex.RUnlock()
 
-	return &val, ok
+	return val, ok
 }
 
 func (cm *CacheMap) Set(key string, value *CachedResponse) {
 	cm.mutex.Lock()
-	cm.entries[strings.ToLower(key)] = *value
+	cm.entries[strings.ToLower(key)] = value
 	cm.mutex.Unlock()
 }
 
