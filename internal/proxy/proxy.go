@@ -43,14 +43,13 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
-
 	for name, hdrs := range resp.Header {
-			for _, hdr := range hdrs {
-				w.Header().Add(name, hdr)
-			}
+		for _, hdr := range hdrs {
+			w.Header().Add(name, hdr)
 		}
+	}
 	w.WriteHeader(resp.StatusCode)
-	
+
 	_, err = io.Copy(w, resp.Body)
 	if err != nil {
 		log.Printf("error while copying the response body: %v", err)

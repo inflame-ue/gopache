@@ -6,33 +6,33 @@ import (
 )
 
 type CacheMap struct {
-	data map[string][]byte
-	mutex sync.RWMutex 
+	body  map[string][]byte
+	mutex sync.RWMutex
 }
 
 func NewCacheMap() CacheMap {
 	return CacheMap{
-		data: map[string][]byte{},
+		body:  map[string][]byte{},
 		mutex: sync.RWMutex{},
 	}
 }
 
 func (cm *CacheMap) Get(key string) ([]byte, bool) {
 	cm.mutex.RLock()
-	val, ok := cm.data[strings.ToLower(key)]
+	val, ok := cm.body[strings.ToLower(key)]
 	cm.mutex.RUnlock()
-	
+
 	return val, ok
 }
 
 func (cm *CacheMap) Set(key string, value []byte) {
 	cm.mutex.Lock()
-	cm.data[strings.ToLower(key)] = value
+	cm.body[strings.ToLower(key)] = value
 	cm.mutex.Unlock()
 }
 
 func (cm *CacheMap) Flush() {
 	cm.mutex.Lock()
-	clear(cm.data)
+	clear(cm.body)
 	cm.mutex.Unlock()
 }
