@@ -13,9 +13,6 @@ type ProxyConfig struct {
 }
 
 func isValidUrl(origin string) bool {
-	if len(origin) == 0 {
-		return false
-	}
 	parsed, err := url.Parse(origin)
 	return err == nil && parsed.Scheme != "" && parsed.Host != ""
 }
@@ -35,6 +32,10 @@ func NewProxyConfig() (*ProxyConfig, error) {
 		return &proxyConfig, nil
 	}
 
+	if len(*origin) == 0 {
+		return &ProxyConfig{}, errors.New("err: missing origin, while --clear-cache is false")
+	}
+	
 	if !isValidUrl(*origin) {
 		return &ProxyConfig{}, errors.New("err: invalid URL format")
 	}

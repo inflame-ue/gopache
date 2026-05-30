@@ -70,21 +70,24 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add(name, hdr)
 		}
 	}
+
 	log.Printf("handled the request with status: %v", resp.StatusCode)
+
 	w.WriteHeader(resp.StatusCode)
 
-	_, err = io.Copy(w, resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("error while reading the response body bytes into memory: %v", err)
+		return
+	}
+
+	_, err = io.Copy(w, bytes.NewReader(bodyBytes))
 	if err != nil {
 		log.Printf("error while copying the response body: %v", err)
 		return
 	}
 
 	log.Printf("setting a cache entry for: %v", redirectURL)
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Printf("error while reading the response body bytes into memory: %v", err)
-		return
-	}
 
 	cachedResp := cache.CachedResponse{
 		Status:  resp.StatusCode,
