@@ -17,28 +17,38 @@ func isValidUrl(origin string) bool {
 	return err == nil && parsed.Scheme != "" && parsed.Host != ""
 }
 
+func NewProxyConfigFromFlags(port int, origin string, clearCache bool) (*ProxyConfig, error) {
+	proxyConfig := ProxyConfig{
+		Port:       port,
+		Origin:     origin,
+		FlushCache: clearCache,
+	}
+	
+	if proxyConfig.FlushCache {
+		return &proxyConfig, nil
+	}
+
+	if len(origin) == 0 {
+		return nil, errors.New("err: missing origin, while --clear-cache is false")
+	}
+
+	if !isValidUrl(origin) {
+		return nil, errors.New("err: invalid URL format")
+	}
+
+	return &proxyConfig, nil
+}
+
 func NewProxyConfig() (*ProxyConfig, error) {
 	port := flag.Int("port", 8080, "the port on which the proxy server will run (default: 8080)")
 	origin := flag.String("origin", "", "the URL of the server to which the request will be forwarded")
 	clearCache := flag.Bool("clear-cache", false, "clear the proxy cache, will force all request to be forwarded to origin")
 	flag.Parse()
 
-	proxyConfig := ProxyConfig{
-		Port:       *port,
-		Origin:     *origin,
-		FlushCache: *clearCache,
-	}
-	if proxyConfig.FlushCache {
-		return &proxyConfig, nil
+	proxyConfig, err := NewProxyConfigFromFlags(*port, *origin, *clearCache)
+	if err != nil {
+		return nil, err
 	}
 
-	if len(*origin) == 0 {
-		return &ProxyConfig{}, errors.New("err: missing origin, while --clear-cache is false")
-	}
-	
-	if !isValidUrl(*origin) {
-		return &ProxyConfig{}, errors.New("err: invalid URL format")
-	}
-
-	return &proxyConfig, nil
+	return proxyConfig, nil
 }
