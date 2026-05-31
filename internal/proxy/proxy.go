@@ -17,6 +17,7 @@ type Proxy struct {
 	Cache  cache.Cache
 }
 
+
 func NewProxy(client *http.Client, cache cache.Cache, origin string) *Proxy {
 	return &Proxy{
 		Client: client,

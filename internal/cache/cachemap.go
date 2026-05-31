@@ -38,6 +38,10 @@ func (cm *CacheMap) Set(key string, value *CachedResponse) {
 	cm.mutex.Unlock()
 }
 
+func (cm *CacheMap) Length() int {
+	return len(cm.entries)
+}
+
 func (cm *CacheMap) Flush() {
 	cm.mutex.Lock()
 	clear(cm.entries)
