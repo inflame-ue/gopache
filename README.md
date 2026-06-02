@@ -4,9 +4,19 @@ A caching HTTP reverse proxy written in Go, based on the [Caching Server](https:
 
 ## Usage
 
+First, build the project with
+
+```bash
+go build -o gopache ./cmd/proxy
 ```
-gopache --port 3000 --origin https://httpbin.org
+
+Then you can run the proxy with
+
 ```
+./gopache --port 3000 --origin https://httpbin.org
+```
+
+or make it avalaible in `$PATH` for even easier use. 
 
 ### Flags
 
