@@ -9,26 +9,26 @@ import (
 )
 
 type CachedResponse struct {
-	Status  int			`json:"status"`
-	Headers http.Header	`json:"headers"`
-	Body    []byte		`json:"body"`
+	Status  int         `json:"status"`
+	Headers http.Header `json:"headers"`
+	Body    []byte      `json:"body"`
 }
 
 type CacheMap struct {
-	entries map[string]*CachedResponse
+	Entries map[string]*CachedResponse `json:"entries"`
 	mutex   sync.RWMutex
 }
 
 func NewCacheMap() *CacheMap {
 	return &CacheMap{
-		entries: map[string]*CachedResponse{},
+		Entries: map[string]*CachedResponse{},
 		mutex:   sync.RWMutex{},
 	}
 }
 
 func (cm *CacheMap) Get(key string) (*CachedResponse, bool) {
 	cm.mutex.RLock()
-	val, ok := cm.entries[strings.ToLower(key)]
+	val, ok := cm.Entries[strings.ToLower(key)]
 	cm.mutex.RUnlock()
 
 	return val, ok
@@ -36,13 +36,13 @@ func (cm *CacheMap) Get(key string) (*CachedResponse, bool) {
 
 func (cm *CacheMap) Set(key string, value *CachedResponse) {
 	cm.mutex.Lock()
-	cm.entries[strings.ToLower(key)] = value
+	cm.Entries[strings.ToLower(key)] = value
 	cm.mutex.Unlock()
 }
 
 func (cm *CacheMap) Length() int {
 	cm.mutex.RLock()
-	length := len(cm.entries)
+	length := len(cm.Entries)
 	cm.mutex.RUnlock()
 	return length
 }
@@ -55,16 +55,14 @@ func (cm *CacheMap) Save(path string) error {
 	defer file.Close()
 
 	// this omits the key for now, testing
-	for _, entry := range cm.entries {
-		data, err := json.Marshal(entry)
-		if err != nil {
-			return err
-		}
+	data, err := json.Marshal(cm)
+	if err != nil {
+		return err
+	}
 
-		_, err = file.Write(data)
-		if err != nil {
-			return err
-		}
+	_, err = file.Write(data)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -76,6 +74,6 @@ func (cm *CacheMap) Load(path string) error {
 
 func (cm *CacheMap) Flush() {
 	cm.mutex.Lock()
-	clear(cm.entries)
+	clear(cm.Entries)
 	cm.mutex.Unlock()
 }
