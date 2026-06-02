@@ -20,23 +20,21 @@ func main() {
 
 	cacheMap := cache.NewCacheMap()
 	client := &http.Client{}
+	proxy := proxy.NewProxy(client, cacheMap, proxyConfig.Origin)
+	addr := fmt.Sprintf(":%d", proxyConfig.Port)
 
-	// this is a no-op for now, since persistent cache is not implemented
 	if proxyConfig.FlushCache {
-		cacheMap.Flush()
+		cacheMap.Flush(proxyConfig.CachePath)
 		log.Print("cache flushed succesfully")
 		os.Exit(0)
 	}
-
-	proxy := proxy.NewProxy(client, cacheMap, proxyConfig.Origin)
-	addr := fmt.Sprintf(":%d", proxyConfig.Port)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		<-c
 		log.Print("interrupt received...serializing cache and exiting...")
-		cacheMap.Save("test.json")
+		cacheMap.Save(proxyConfig.CachePath)
 		os.Exit(0)
 	}()
 	

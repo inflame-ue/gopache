@@ -10,6 +10,7 @@ type ProxyConfig struct {
 	Port       int
 	Origin     string
 	FlushCache bool
+	CachePath  string
 }
 
 func isValidUrl(origin string) bool {
@@ -17,13 +18,14 @@ func isValidUrl(origin string) bool {
 	return err == nil && parsed.Scheme != "" && parsed.Host != ""
 }
 
-func NewProxyConfigFromFlags(port int, origin string, clearCache bool) (*ProxyConfig, error) {
+func NewProxyConfigFromFlags(port int, origin string, clearCache bool, cachePath string) (*ProxyConfig, error) {
 	proxyConfig := ProxyConfig{
 		Port:       port,
 		Origin:     origin,
 		FlushCache: clearCache,
+		CachePath:  cachePath,
 	}
-	
+
 	if proxyConfig.FlushCache {
 		return &proxyConfig, nil
 	}
@@ -43,9 +45,10 @@ func NewProxyConfig() (*ProxyConfig, error) {
 	port := flag.Int("port", 8080, "the port on which the proxy server will run (default: 8080)")
 	origin := flag.String("origin", "", "the URL of the server to which the request will be forwarded")
 	clearCache := flag.Bool("clear-cache", false, "clear the proxy cache, will force all request to be forwarded to origin")
+	cachePath := flag.String("cache-path", "cache.json", "path to the cache file, where the persistent cache will be stored (default: \"cache.json\")")
 	flag.Parse()
 
-	proxyConfig, err := NewProxyConfigFromFlags(*port, *origin, *clearCache)
+	proxyConfig, err := NewProxyConfigFromFlags(*port, *origin, *clearCache, *cachePath)
 	if err != nil {
 		return nil, err
 	}

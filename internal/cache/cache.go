@@ -5,5 +5,5 @@ type Cache interface {
 	Set(key string, value *CachedResponse)
 	Save(path string) error
 	Load(path string) error
-	Flush()
+	Flush(path string) error
 }

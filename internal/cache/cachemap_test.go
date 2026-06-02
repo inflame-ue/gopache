@@ -98,23 +98,3 @@ func TestSet(t *testing.T) {
 		})
 	}
 }
-
-func TestFlush(t *testing.T) {
-	cacheMap := NewCacheMap()
-	cachedResp := &CachedResponse{
-		Status: 200,
-		Body:   []byte("success"),
-	}
-	cachedResp2 := &CachedResponse{
-		Status: 200,
-		Body:   []byte("new success"),
-	}
-	cacheMap.Set("origin", cachedResp)
-	cacheMap.Set("another origin", cachedResp2)
-
-	cacheMap.Flush()
-
-	if cacheMap.Length() != 0 {
-		t.Errorf("expected cache map to be empty after a flush")
-	}
-}

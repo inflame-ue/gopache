@@ -14,6 +14,8 @@ type CachedResponse struct {
 	Body    []byte      `json:"body"`
 }
 
+// Entries field is made public for the sake of simple json serializaton
+// It is not intended to be used directly, since no locks will be enforced
 type CacheMap struct {
 	Entries map[string]*CachedResponse `json:"entries"`
 	mutex   sync.RWMutex
@@ -55,10 +57,12 @@ func (cm *CacheMap) Save(path string) error {
 	defer file.Close()
 
 	// this omits the key for now, testing
+	cm.mutex.RLock()
 	data, err := json.Marshal(cm)
 	if err != nil {
 		return err
 	}
+	cm.mutex.RUnlock()
 
 	_, err = file.Write(data)
 	if err != nil {
@@ -72,8 +76,14 @@ func (cm *CacheMap) Load(path string) error {
 	return nil
 }
 
-func (cm *CacheMap) Flush() {
-	cm.mutex.Lock()
-	clear(cm.Entries)
-	cm.mutex.Unlock()
+func (cm *CacheMap) Flush(path string) error {
+	// to flush the cash is to override the file
+	// os.Create does the job here
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	
+	return nil
 }
