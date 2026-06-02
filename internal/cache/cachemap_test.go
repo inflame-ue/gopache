@@ -6,7 +6,7 @@ import (
 )
 
 func TestGet(t *testing.T) {
-	cacheMap := NewCacheMap()
+	cacheMap := newCacheMap()
 	cachedResp := &CachedResponse{
 		Status: 200,
 		Body:   []byte("success"),
@@ -52,7 +52,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestSet(t *testing.T) {
-	cacheMap := NewCacheMap()
+	cacheMap := newCacheMap()
 	cachedResp := &CachedResponse{
 		Status: 200,
 		Body:   []byte("success"),
@@ -61,25 +61,25 @@ func TestSet(t *testing.T) {
 		Status: 200,
 		Body:   []byte("new success"),
 	}
-	
+
 	type testCase struct {
-		key       string
-		value     *CachedResponse
-		want 	  *CachedResponse
-		wantOk    bool
+		key    string
+		value  *CachedResponse
+		want   *CachedResponse
+		wantOk bool
 	}
 
 	tests := map[string]testCase{
 		"set new key, value": {
-			key: "https://httpbin.com",
-			value: cachedResp,
-			want: cachedResp,
+			key:    "https://httpbin.com",
+			value:  cachedResp,
+			want:   cachedResp,
 			wantOk: true,
 		},
 		"set overwrite uppercase key, value": {
-			key: "HTTPS://HTTPBIN.COM",
-			value: cachedResp2,
-			want: cachedResp2,
+			key:    "HTTPS://HTTPBIN.COM",
+			value:  cachedResp2,
+			want:   cachedResp2,
 			wantOk: true,
 		},
 	}

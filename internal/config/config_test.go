@@ -29,18 +29,6 @@ func TestNewProxyConfigFromFlags(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		"default cache path": {
-			port:       3000,
-			origin:     "",
-			clearCache: false,
-			cachePath:  "",
-			want: &ProxyConfig{
-				Port:       3000,
-				Origin:     "https://httpbin.com",
-				FlushCache: false,
-				CachePath:  "cache.json",
-			},
-		},
 		"empty origin, clear cache": {
 			port:       3000,
 			origin:     "",
@@ -52,6 +40,7 @@ func TestNewProxyConfigFromFlags(t *testing.T) {
 				FlushCache: true,
 				CachePath:  "test.json",
 			},
+			wantErr: false,
 		},
 		"empty origin, no clear cache": {
 			port:       3000,

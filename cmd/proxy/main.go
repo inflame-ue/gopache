@@ -18,13 +18,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	cacheMap := cache.NewCacheMap()
+	cacheMap, err := cache.LoadCacheMap(proxyConfig.CachePath)
+	if err != nil {
+		log.Fatalf("failed to load the cache: %v", err)
+	}
 	client := &http.Client{}
 	proxy := proxy.NewProxy(client, cacheMap, proxyConfig.Origin)
 	addr := fmt.Sprintf(":%d", proxyConfig.Port)
 
 	if proxyConfig.FlushCache {
-		cacheMap.Flush(proxyConfig.CachePath)
+		err := cacheMap.Flush(proxyConfig.CachePath)
+		if err != nil {
+			log.Fatalf("failed to flush the cache: %v", err)
+		}
 		log.Print("cache flushed succesfully")
 		os.Exit(0)
 	}
@@ -34,7 +40,10 @@ func main() {
 	go func() {
 		<-c
 		log.Print("interrupt received...serializing cache and exiting...")
-		cacheMap.Save(proxyConfig.CachePath)
+		err = cacheMap.Save(proxyConfig.CachePath)
+		if err != nil {
+			log.Fatalf("failed to save the cache: %v")
+		}
 		os.Exit(0)
 	}()
 	

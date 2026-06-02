@@ -21,11 +21,34 @@ type CacheMap struct {
 	mutex   sync.RWMutex
 }
 
-func NewCacheMap() *CacheMap {
+func newCacheMap() *CacheMap {
 	return &CacheMap{
 		Entries: map[string]*CachedResponse{},
 		mutex:   sync.RWMutex{},
 	}
+}
+
+func LoadCacheMap(path string) (*CacheMap, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	stat, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	if stat.Size() == 0 {
+		return newCacheMap(), nil 
+	}
+
+	var cacheMap *CacheMap
+	if err := json.NewDecoder(file).Decode(&cacheMap); err != nil {
+		return nil, err
+	}
+
+	return cacheMap, nil
 }
 
 func (cm *CacheMap) Get(key string) (*CachedResponse, bool) {
@@ -69,10 +92,6 @@ func (cm *CacheMap) Save(path string) error {
 		return err
 	}
 
-	return nil
-}
-
-func (cm *CacheMap) Load(path string) error {
 	return nil
 }
 
