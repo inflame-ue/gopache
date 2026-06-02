@@ -2,10 +2,13 @@ package cache
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"os"
 	"strings"
 	"sync"
+
+	"github.com/goark/gnkf/newline"
 )
 
 type CachedResponse struct {
@@ -28,9 +31,13 @@ func newCacheMap() *CacheMap {
 	}
 }
 
-func LoadCacheMap(path string) (*CacheMap, error) {
+func LoadCacheMap(path string) (*CacheMap, error) {	
 	file, err := os.Open(path)
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return newCacheMap(), nil
+		}
+		
 		return nil, err
 	}
 	defer file.Close()

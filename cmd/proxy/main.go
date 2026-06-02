@@ -42,7 +42,7 @@ func main() {
 		log.Print("interrupt received...serializing cache and exiting...")
 		err = cacheMap.Save(proxyConfig.CachePath)
 		if err != nil {
-			log.Fatalf("failed to save the cache: %v")
+			log.Fatalf("failed to save the cache: %v", err)
 		}
 		os.Exit(0)
 	}()
