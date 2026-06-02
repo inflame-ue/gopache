@@ -7,8 +7,6 @@ import (
 	"os"
 	"strings"
 	"sync"
-
-	"github.com/goark/gnkf/newline"
 )
 
 type CachedResponse struct {
