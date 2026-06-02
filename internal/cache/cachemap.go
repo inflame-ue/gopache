@@ -1,15 +1,17 @@
 package cache
 
 import (
+	"encoding/json"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 )
 
 type CachedResponse struct {
-	Status  int
-	Headers http.Header
-	Body    []byte
+	Status  int			`json:"status"`
+	Headers http.Header	`json:"headers"`
+	Body    []byte		`json:"body"`
 }
 
 type CacheMap struct {
@@ -39,7 +41,37 @@ func (cm *CacheMap) Set(key string, value *CachedResponse) {
 }
 
 func (cm *CacheMap) Length() int {
-	return len(cm.entries)
+	cm.mutex.RLock()
+	length := len(cm.entries)
+	cm.mutex.RUnlock()
+	return length
+}
+
+func (cm *CacheMap) Save(path string) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// this omits the key for now, testing
+	for _, entry := range cm.entries {
+		data, err := json.Marshal(entry)
+		if err != nil {
+			return err
+		}
+
+		_, err = file.Write(data)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (cm *CacheMap) Load(path string) error {
+	return nil
 }
 
 func (cm *CacheMap) Flush() {
