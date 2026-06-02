@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 
 	"github.com/inflame-ue/gopache/internal/cache"
 	"github.com/inflame-ue/gopache/internal/config"
@@ -36,13 +37,13 @@ func main() {
 	}
 
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
 		log.Print("interrupt received...serializing cache and exiting...")
 		err = cacheMap.Save(proxyConfig.CachePath)
 		if err != nil {
-			log.Fatalf("failed to save the cache: %v", err)
+			log.Printf("failed to save the cache: %v", err)
 		}
 		os.Exit(0)
 	}()

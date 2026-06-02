@@ -97,12 +97,21 @@ func (cm *CacheMap) Save(path string) error {
 		return err
 	}
 
+	err = file.Sync()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (cm *CacheMap) Flush(path string) error {
-	// to flush the cash is to override the file
-	// os.Create does the job here
+	cm.mutex.Lock()
+	clear(cm.Entries)
+	cm.mutex.Unlock()
+	
+	// to flush the cache is to override the file
+	// os.Create does the job here well enough
 	file, err := os.Create(path)
 	if err != nil {
 		return err
