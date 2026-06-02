@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/inflame-ue/gopache/internal/cache"
 	"github.com/inflame-ue/gopache/internal/config"
@@ -16,17 +19,39 @@ func main() {
 		log.Fatal(err)
 	}
 
-	cacheMap := cache.NewCacheMap()
-	client := &http.Client{}
-
-	// this is a no-op for now, since persistent cache is not implemented
-	if proxyConfig.FlushCache {
-		cacheMap.Flush()
-		log.Print("cache flushed succesfully")
+	cacheMap, err := cache.LoadCacheMap(proxyConfig.CachePath)
+	if err != nil {
+		log.Fatalf("failed to load the cache: %v", err)
 	}
-
+	client := &http.Client{}
 	proxy := proxy.NewProxy(client, cacheMap, proxyConfig.Origin)
 	addr := fmt.Sprintf(":%d", proxyConfig.Port)
+
+	if proxyConfig.FlushCache {
+		err := cacheMap.Flush(proxyConfig.CachePath)
+		if err != nil {
+			log.Fatalf("failed to flush the cache: %v", err)
+		}
+		log.Print("cache flushed succesfully")
+		os.Exit(0)
+	}
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		log.Print("interrupt received...serializing cache and exiting...")
+		err = cacheMap.Save(proxyConfig.CachePath)
+		if err != nil {
+			log.Printf("failed to save the cache: %v", err)
+		}
+		os.Exit(0)
+	}()
+	
 	log.Printf("listening on port: %d", proxyConfig.Port)
-	http.ListenAndServe(addr, proxy)
+	err = http.ListenAndServe(addr, proxy)
+	if err != nil {
+		log.Print("something went horribly wrong...")
+		os.Exit(1)
+	}
 }
